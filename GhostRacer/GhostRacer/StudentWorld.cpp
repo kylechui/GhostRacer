@@ -71,6 +71,7 @@ int StudentWorld::move()
         if (beatenLevel())
         {
             increaseScore(m_bonus);
+            playSound(SOUND_FINISHED_LEVEL);
             return GWSTATUS_FINISHED_LEVEL;
         }
         it++;
@@ -126,7 +127,8 @@ int StudentWorld::move()
     if (randInt(0, chanceVehicle - 1) == 0)
         addZombieCab();
     // Decrease the bonus
-    m_bonus--;
+    if (m_bonus > 0)
+		m_bonus--;
     // Update display text
     ostringstream status;
     status << "Score: " << getScore();

@@ -159,9 +159,7 @@ void ZombieCab::interactWithProjectile()
 		return;
 	}
 	else
-	{
 		getWorld()->playSound(SOUND_VEHICLE_HURT);
-	}
 }
 void ZombieCab::doSomething()
 {
@@ -254,9 +252,10 @@ void HumanPedestrian::doSomething()
 	// Check if not alive
 	if (!isAlive())
 		return;
-	// If collision with the player
+	// If there is a collision with the player
 	if (doesOverlap(getWorld()->getPlayer()))
 	{
+		// Decrease the number of lives and tell the world that the player lost
 		getWorld()->decLives();
 		getWorld()->pedKilled();
 		setDead();
@@ -277,9 +276,7 @@ void HumanPedestrian::doSomething()
 		return;
 	// Otherwise, pick a new movement plan
 	else
-	{
 		updateMovementPlan();
-	}
 }
 void HumanPedestrian::interactWithProjectile()
 {
@@ -399,6 +396,8 @@ void ActivatedObject::interactWithPlayer()
 {
 	// Define a temporary pointer to the player for convenience
 	Player* p = getWorld()->getPlayer();
+	// Increase the score
+	getWorld()->increaseScore(getScoreValue());
 	// Update the health and remove any overflow, if necessary
 	p->changeHealth(getHealthValue());
 	if (p->getHealth() > 100)
