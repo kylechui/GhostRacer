@@ -115,11 +115,11 @@ int StudentWorld::move()
     // Add zombie pedestrians
     int chanceZombiePed = max(100 - getLevel() * 10, 20);
     if (randInt(0, chanceZombiePed - 1) == 0)
-        addActor(new ZombiePedestrian(randInt(0, VIEW_WIDTH), VIEW_HEIGHT, this));
+        addActor(new ZombiePedestrian(randInt(0, VIEW_WIDTH - 1), VIEW_HEIGHT, this));
     // Add human pedestrians
     int chanceHumanPed = max(200 - getLevel() * 10, 30);
     if (randInt(0, chanceHumanPed - 1) == 0)
-        addActor(new HumanPedestrian(randInt(0, VIEW_WIDTH), VIEW_HEIGHT, this));
+        addActor(new HumanPedestrian(randInt(0, VIEW_WIDTH - 1), VIEW_HEIGHT, this));
     // Add holy water goodies
     int chanceOfHolyWater = 100 + 10 * getLevel();
     if (randInt(0, chanceOfHolyWater - 1) == 0)

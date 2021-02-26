@@ -1,0 +1,8 @@
+Kyle Chui 
+Professor Nachenberg 
+Winter 2021 CS 32
+2021 February 26
+
+Project 3 Report
+
+1. Descriptions of the public member functions in my classes: 
