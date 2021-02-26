@@ -4,30 +4,32 @@
 #include "GraphObject.h"
 class StudentWorld;
 
-// Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 //
 // Actor Class
+//	 Derived from GraphObject Class
 //	 Members of this class:
+//		- Have horizontal and vertical speeds
+//		- Can be affected by/interact with projectiles
+//		- Are alive/dead
 //
 class Actor : public GraphObject
 {
 public:
 	Actor(int imageID, double x, double y, int dir, double size, int depth, StudentWorld* world);
 	virtual void doSomething() = 0;
-	// Functions that are NOT going to be overwritten
+	bool isAlive() const { return m_alive; };
 	double getHorizSpeed() const { return m_horizSpeed; };
 	double getVertSpeed() const { return m_vertSpeed; };
-	bool isAlive() const { return m_alive; };
+	bool doesOverlap(Actor* other) const;
+	virtual bool isCollisionAvoidanceWorthy() const { return false; };
+	virtual bool isAffectedByProjectile() const { return false; };
+	virtual void interactWithProjectile() {};
+protected:
 	StudentWorld* getWorld() const { return m_world; };
 	void setDead() { m_alive = false; };
 	void setHorizSpeed(double hs) { m_horizSpeed = hs; };
 	void setVertSpeed(double vs) { m_vertSpeed = vs; };
-	bool doesOverlap(Actor* other) const;
 	bool outOfBounds() const;
-	// Functions that WILL be overwritten
-	virtual bool isCollisionAvoidanceWorthy() const { return false; };
-	virtual bool isAffectedByProjectile() const { return false; };
-	virtual void interactWithProjectile() {};
 	void move();
 private:
 	StudentWorld* m_world;
@@ -39,9 +41,9 @@ private:
 // Sentient Class
 //	 Derived from Actor Class
 //	 Members of this class: 
-//		-Have health
-//		-Can take damage
-//		-Are collision avoidance worthy
+//		- Have health
+//		- Can take damage
+//		- Are collision avoidance worthy
 //
 class Sentient : public Actor
 {
@@ -89,14 +91,14 @@ private:
 // Pedestrian Class
 //	 Derived from the Sentient class
 //	 Members of this class:
-//		-Move in a particular way
-//		-Have movement plan distance
+//		- Have movement plan distance
 //
 class Pedestrian : public Sentient
 {
 public:
 	Pedestrian(int imageID, double x, double y, int size, StudentWorld* world);
 	virtual bool isAffectedByProjectile() const { return true; };
+protected:
 	int getMovementPlanDistance() const { return m_movementPlanDistance; };
 	void setMovementPlanDistance(int d) { m_movementPlanDistance = d; };
 	void updateMovementPlan();
@@ -128,15 +130,17 @@ private:
 };
 //
 // Activated Object class
+//	 Derived from the Actor Class
 //	 Members of this class:
-//		-Move in a particular way
-//		-Interact with the player upon contact
+//		- Interact with the player upon contact
 //
 class ActivatedObject : public Actor
 {
 public:
 	ActivatedObject(int imageID, double x, double y, int size, StudentWorld* world);
 	virtual void doSomething();
+	virtual void interactWithProjectile() { setDead(); };
+protected:
 	// Initialise default behaviours for the activated objects (can/will be overridden by derived classes)
 	virtual bool doesRotateValue() const { return false; };
 	virtual bool spinPlayerValue() const { return false; };
@@ -146,7 +150,6 @@ public:
 	virtual int getScoreValue() const { return 0; };
 	virtual int getSoundValue() const { return SOUND_GOT_GOODIE; };
 	void interactWithPlayer();
-	void interactWithProjectile() { setDead(); };
 private:
 };
 //

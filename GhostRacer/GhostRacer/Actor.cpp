@@ -472,7 +472,10 @@ void Projectile::doSomething()
 		return;
 	// Check for interactions with other actors
 	if (getWorld()->checkProjectileCollision(this))
+	{
 		setDead();
+		return;
+	}
 	// Move forwards
 	moveForward(SPRITE_HEIGHT);
 	m_distTraveled += SPRITE_HEIGHT;
@@ -484,9 +487,7 @@ void Projectile::doSomething()
 	}
 	// Check if it has traveled 160 pixels
 	if (m_distTraveled >= 160)
-	{
 		setDead();
-	}
 }
 //
 // Border Line member functions

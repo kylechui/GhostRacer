@@ -1,4 +1,4 @@
 ﻿  Actor.cpp
-C:\Users\kylec\Documents\Winter21\CS32\GhostRacer\GhostRacer\Actor.cpp(423,6): error C3861: 'selfDestructsValue': identifier not found
   StudentWorld.cpp
   Generating Code...
+  GhostRacer.vcxproj -> C:\Users\kylec\Documents\Winter21\CS32\GhostRacer\Debug\GhostRacer.exe
