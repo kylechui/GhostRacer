@@ -137,6 +137,7 @@ class ActivatedObject : public Actor
 public:
 	ActivatedObject(int imageID, double x, double y, int size, StudentWorld* world);
 	virtual void doSomething();
+	// Initialise default behaviours for the activated objects (can/will be overridden by derived classes)
 	virtual bool doesRotateValue() const { return false; };
 	virtual bool spinPlayerValue() const { return false; };
 	virtual bool selfDestructsValue() const { return true; };
@@ -202,7 +203,7 @@ private:
 class Projectile : public Actor
 {
 public:
-	Projectile(StudentWorld* world);
+	Projectile(double x, double y, int dir, StudentWorld* world);
 	virtual void doSomething();
 private:
 	double m_distTraveled;
@@ -213,7 +214,7 @@ private:
 class BorderLine : public Actor
 {
 public:
-	BorderLine(double x, double y, int color, StudentWorld* world);
+	BorderLine(double x, double y, int imageID, StudentWorld* world);
 	virtual void doSomething();
 private:
 };

@@ -64,7 +64,7 @@ void Player::doSomething()
 		return;
 	}
 	// If colliding with the left side
-	if (getX() <= ROAD_CENTER - ROAD_WIDTH / 2.0)
+	if (getX() <= LEFT_EDGE)
 	{
 		if (getDirection() > 90)
 		{
@@ -74,7 +74,7 @@ void Player::doSomething()
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 	}
 	// If colliding with the right side
-	else if (getX() >= ROAD_CENTER + ROAD_WIDTH / 2.0)
+	else if (getX() >= RIGHT_EDGE)
 	{
 		if (getDirection() < 90)
 		{
@@ -88,6 +88,7 @@ void Player::doSomething()
 	{
 		switch (ch)
 		{
+		// Shoot a holy water projectile
 		case KEY_PRESS_SPACE:
 			if (m_spraysLeft > 0) shootHolyWater();
 			break;
@@ -118,7 +119,11 @@ void Player::doSomething()
 }
 void Player::shootHolyWater()
 {
-	getWorld()->addActor(new Projectile(getWorld()));
+	// Calculate where to spawn the holy water projectile
+	double newX = getX() + SPRITE_HEIGHT * cos(getDirection() * M_PI / 180);
+	double newY = getY() + SPRITE_HEIGHT * sin(getDirection() * M_PI / 180);
+	// Add the projectile to the world and play the spray sound
+	getWorld()->addActor(new Projectile(newX, newY, getDirection(), getWorld()));
 	getWorld()->playSound(SOUND_PLAYER_SPRAY);
 	m_spraysLeft--;
 }
@@ -128,6 +133,7 @@ void Player::spin()
 	int spinAmount = randInt(5, 20);
 	if (randInt(0, 1) == 0)
 		spinAmount *= -1;
+	// Correct for overturning
 	setDirection(getDirection() + spinAmount);
 	if (getDirection() < 60)
 		setDirection(60);
@@ -140,7 +146,7 @@ void Player::spin()
 ZombieCab::ZombieCab(double x, double y, double speed, int lane, StudentWorld* world) :
 	Sentient(IID_ZOMBIE_CAB, x, y, 90, 4, 0, world, 3),
 	m_damagedPlayer(false),
-	m_lane(0),
+	m_lane(lane),
 	m_movementPlanDistance(0)
 {
 	setVertSpeed(speed);
@@ -148,13 +154,16 @@ ZombieCab::ZombieCab(double x, double y, double speed, int lane, StudentWorld* w
 void ZombieCab::interactWithProjectile()
 {
 	changeHealth(-1);
+	// If health is zero or below
 	if (getHealth() <= 0)
 	{
+		// Set status to dead and play a sound
 		setDead();
 		getWorld()->playSound(SOUND_VEHICLE_DIE);
 		// Random one in five chance to spawn an oil slick upon death
 		if (randInt(0, 4) == 0)
 			getWorld()->addActor(new OilSlick(getX(), getY(), getWorld()));
+		// Increase the score by 200 points
 		getWorld()->increaseScore(200);
 		return;
 	}
@@ -166,12 +175,10 @@ void ZombieCab::doSomething()
 	// Check if not alive
 	if (!isAlive())
 		return;
-	// If not overlapping with the player, reset the damage boolean
-	if (!doesOverlap(getWorld()->getPlayer()))
-		m_damagedPlayer = false;
-	// Otherwise, if the cab has not damaged the player, damage the player
-	else if (!m_damagedPlayer)
+	// If the cab has not yet damaged the player and overlaps with the player, damage the player
+	if (!m_damagedPlayer && doesOverlap(getWorld()->getPlayer()))
 	{
+		// Play a sound and make the player take 20 points of damage
 		getWorld()->playSound(SOUND_VEHICLE_CRASH);
 		getWorld()->getPlayer()->changeHealth(-20);
 		// Change the car's direction/speed based on whether it is to the left or right of the player
@@ -193,7 +200,10 @@ void ZombieCab::doSomething()
 	move();
 	// Check if out of bounds
 	if (outOfBounds())
+	{
 		setDead();
+		return;
+	}
 	// If the cab is faster than the player
 	// and there is a collision avoidance worthy actor within 96 pixels in front of it, slow down
 	if (getVertSpeed() >= getWorld()->getPlayer()->getVertSpeed() && getWorld()->actorInRangeOfCab(this, 1))
@@ -344,24 +354,28 @@ void ZombiePedestrian::doSomething()
 	}
 	// Otherwise pick a new movement plan
 	else
-	{
 		updateMovementPlan();
-	}
 }
 void ZombiePedestrian::interactWithProjectile()
 {
+	// Take 1 point of damage
 	changeHealth(-1);
+	// If health goes to zero or below	
 	if (getHealth() <= 0)
 	{
+		// Change status to dead and play a sound
 		setDead();
 		getWorld()->playSound(SOUND_PED_DIE);
+		// If the death was not caused by a player collision, randomly spawn a healing goodie
 		if (!doesOverlap(getWorld()->getPlayer()))
 		{
 			if (randInt(0, 4) == 0)
 				getWorld()->addActor(new HealingGoodie(getX(), getY(), getWorld()));
 		}
+		// Increase score by 150 for killing the zombie pedestrian
 		getWorld()->increaseScore(150);
 	}
+	// Otherwise play a hurt sound
 	else
 		getWorld()->playSound(SOUND_PED_HURT);
 }
@@ -384,9 +398,7 @@ void ActivatedObject::doSomething()
 	}
 	// Interact with the player
 	if (doesOverlap(getWorld()->getPlayer()))
-	{
 		interactWithPlayer();
-	}
 	// Rotate if necessary
 	if (doesRotateValue())
 		setDirection(getDirection() + 10);
@@ -412,7 +424,7 @@ void ActivatedObject::interactWithPlayer()
 		setDead();
 	// Play the appropriate sound
 	getWorld()->playSound(getSoundValue());
-	// Save a soul, if necessary
+	// Save a soul, if necessary (souls are the only goodie that rotate)
 	if (doesRotateValue())
 		getWorld()->soulSaved();
 }
@@ -448,15 +460,10 @@ SoulGoodie::SoulGoodie(double x, double y, StudentWorld* world) :
 //
 // Holy Water Projectile member functions
 //
-Projectile::Projectile(StudentWorld* world) :
-	// TODO: Fix these
-	Actor(IID_HOLY_WATER_PROJECTILE, 0, 0, 0, 1, 1, world),
+Projectile::Projectile(double x, double y, int dir, StudentWorld* world) :
+	Actor(IID_HOLY_WATER_PROJECTILE, x, y, dir, 1, 1, world),
 	m_distTraveled(0)
 {
-	setDirection(world->getPlayer()->getDirection());
-	double m_newX = world->getPlayer()->getX() + SPRITE_HEIGHT * cos(getDirection() * M_PI / 180);
-	double m_newY = world->getPlayer()->getY() + SPRITE_HEIGHT * sin(getDirection() * M_PI / 180);
-	moveTo(m_newX, m_newY);
 }
 void Projectile::doSomething()
 {
@@ -484,8 +491,8 @@ void Projectile::doSomething()
 //
 // Border Line member functions
 //
-BorderLine::BorderLine(double x, double y, int color, StudentWorld* world) :
-	Actor(color, x, y, 0, 2, 2, world)
+BorderLine::BorderLine(double x, double y, int imageID, StudentWorld* world) :
+	Actor(imageID, x, y, 0, 2, 2, world)
 {
 }
 void BorderLine::doSomething()
