@@ -14,9 +14,9 @@
 const int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
 const int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
 // Border Line math for correct positioning
+const int newBorderY = VIEW_HEIGHT - SPRITE_HEIGHT;
 const double n_borderLine = VIEW_HEIGHT / SPRITE_HEIGHT;
 const double m_borderLine = VIEW_HEIGHT / (4 * SPRITE_HEIGHT);
-const int newBorderY = VIEW_HEIGHT - SPRITE_HEIGHT;
 
 class StudentWorld : public GameWorld
 {
@@ -37,12 +37,17 @@ public:
     void soulSaved() { m_soulsSaved++; };
     // Check if the holy water projectile has hit anything, and act accordingly
     bool checkProjectileCollision(Actor* proj);
+    // Check if there's another actor close to the zombie cab
     bool actorInRangeOfCab(ZombieCab* cab, int dir);
 private:
+    // Private functions only called by the world
     bool beatenLevel() { return (m_soulsSaved >= getLevel() * 2 + 5); };
     void addZombieCab();
+    // Pointer to the player
     Player* m_player;
+    // Vector containing pointers to all the actors
     std::vector<Actor*> allActors;
+    // Some constants
     double m_distSinceLastWhiteBorderLine;
     int m_soulsSaved;
     bool m_deadPed;

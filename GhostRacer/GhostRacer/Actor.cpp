@@ -137,7 +137,7 @@ void Player::spin()
 //
 // Zombie Cab member functions
 //
-ZombieCab::ZombieCab(double x, double y, double speed, StudentWorld* world) :
+ZombieCab::ZombieCab(double x, double y, double speed, int lane, StudentWorld* world) :
 	Sentient(IID_ZOMBIE_CAB, x, y, 90, 4, 0, world, 3),
 	m_damagedPlayer(false),
 	m_lane(0),

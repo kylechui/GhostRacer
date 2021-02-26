@@ -33,7 +33,7 @@ int StudentWorld::init()
     m_soulsSaved = 0;
     m_deadPed = false;
     m_bonus = 5000;
-    // Create the player
+    // Create the player and add them to the vector of all actors
     m_player = new Player(this);
     addActor(m_player);
     // Add the yellow border lines
@@ -48,7 +48,7 @@ int StudentWorld::init()
         addActor(new BorderLine(LEFT_EDGE + ROAD_WIDTH / 3.0, i * 4.0 * SPRITE_HEIGHT, IID_WHITE_BORDER_LINE, this));
         addActor(new BorderLine(RIGHT_EDGE - ROAD_WIDTH / 3.0, i * 4.0 * SPRITE_HEIGHT, IID_WHITE_BORDER_LINE, this));
     }
-    // Define the distance since the last white border line
+    // Initialise the distance since the last white border line
     m_distSinceLastWhiteBorderLine = newBorderY - (m_borderLine - 1) * 4 * SPRITE_HEIGHT;
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -59,10 +59,12 @@ int StudentWorld::move()
     vector<Actor*>::iterator it = allActors.begin();
     while (it != allActors.end())
     {
+        // If the actor is still alive, make it do something
         if ((*it)->isAlive())
         {
             (*it)->doSomething();
         }
+        // If the player is dead or a pedestrian has been killed, end the level
         if (!m_player->isAlive() || m_deadPed)
         {
             return GWSTATUS_PLAYER_DIED;
@@ -102,10 +104,22 @@ int StudentWorld::move()
         addActor(new BorderLine(RIGHT_EDGE - ROAD_WIDTH / 3.0, newBorderY, IID_WHITE_BORDER_LINE, this));
         m_distSinceLastWhiteBorderLine = 0;
     }
+    // Add zombie cabs
+    int chanceVehicle = max(100 - getLevel() * 10, 20);
+    if (randInt(0, chanceVehicle - 1) == 0)
+        addZombieCab();
     // Add oil slicks
     int chanceOilSlick = max(150 - getLevel() * 10, 40);
     if (randInt(0, chanceOilSlick - 1) == 0)
         addActor(new OilSlick(randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT, this));
+    // Add zombie pedestrians
+    int chanceZombiePed = max(100 - getLevel() * 10, 20);
+    if (randInt(0, chanceZombiePed - 1) == 0)
+        addActor(new ZombiePedestrian(randInt(0, VIEW_WIDTH), VIEW_HEIGHT, this));
+    // Add human pedestrians
+    int chanceHumanPed = max(200 - getLevel() * 10, 30);
+    if (randInt(0, chanceHumanPed - 1) == 0)
+        addActor(new HumanPedestrian(randInt(0, VIEW_WIDTH), VIEW_HEIGHT, this));
     // Add holy water goodies
     int chanceOfHolyWater = 100 + 10 * getLevel();
     if (randInt(0, chanceOfHolyWater - 1) == 0)
@@ -114,19 +128,7 @@ int StudentWorld::move()
     int chanceOfLostSoul = 100;
     if (randInt(0, chanceOfLostSoul - 1) == 0)
         addActor(new SoulGoodie(randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT, this));
-    // Add human pedestrians
-    int chanceHumanPed = max(200 - getLevel() * 10, 30);
-    if (randInt(0, chanceHumanPed - 1) == 0)
-        addActor(new HumanPedestrian(randInt(0, VIEW_WIDTH), VIEW_HEIGHT, this));
-    // Add zombie pedestrians
-    int chanceZombiePed = max(100 - getLevel() * 10, 20);
-    if (randInt(0, chanceZombiePed - 1) == 0)
-        addActor(new ZombiePedestrian(randInt(0, VIEW_WIDTH), VIEW_HEIGHT, this));
-    // Add zombie cabs
-    int chanceVehicle = max(100 - getLevel() * 10, 20);
-    if (randInt(0, chanceVehicle - 1) == 0)
-        addZombieCab();
-    // Decrease the bonus
+    // Decrease the bonus if positive
     if (m_bonus > 0)
 		m_bonus--;
     // Update display text
@@ -148,7 +150,7 @@ int StudentWorld::move()
     // Player has not died nor beaten the level, so continue
     return GWSTATUS_CONTINUE_GAME;
 }
-
+// Check for some conditions and if satisfied, add a zombie cab to the game
 void StudentWorld::addZombieCab()
 {
     bool checkedOne = false;
@@ -162,6 +164,7 @@ void StudentWorld::addZombieCab()
         // Continually pick a new lane until you find one that hasn't been checked yet
         while ((curLane == -1 && checkedOne) || (curLane == 0 && checkedTwo) || (curLane == 1 && checkedThree))
 			curLane = randInt(-1, 1);
+        // Update that lane to be checked
         switch (curLane)
         {
         case -1:
@@ -176,10 +179,10 @@ void StudentWorld::addZombieCab()
         default:
             break;
         }
+        // Define the left and right boundaries of the current lane to be checked
         double leftBoundary = ROAD_CENTER + ROAD_WIDTH / 3.0 * curLane  - ROAD_WIDTH / 6.0;
         double rightBoundary = ROAD_CENTER + ROAD_WIDTH / 3.0 * curLane + ROAD_WIDTH / 6.0;
-        // Iterate through all of the actors and find the ones closest to the top and bottom
-        // in the desired lane
+        // Iterate through all of the actors and find the ones closest to the top and bottom in the desired lane
         vector<Actor*>::iterator it = allActors.begin();
         Actor* closestToBottom = nullptr;
         Actor* closestToTop = nullptr;
@@ -205,20 +208,26 @@ void StudentWorld::addZombieCab()
             }
             it++;
         }
+        // If there is no collision avoidance worthy actor in the current lane or 
+        // the closest one to the bottom is sufficiently far, spawn a cab in the lane
         if (closestToBottom == nullptr || closestToBottom->getY() > VIEW_HEIGHT / 3)
         {
-            addActor(new ZombieCab(ROAD_CENTER + ROAD_WIDTH / 3.0 * curLane, SPRITE_HEIGHT / 2.0, m_player->getVertSpeed() + randInt(2, 4), this));
+            addActor(new ZombieCab(ROAD_CENTER + ROAD_WIDTH / 3.0 * curLane, SPRITE_HEIGHT / 2.0, m_player->getVertSpeed() + randInt(2, 4), curLane, this));
             break;
         }
+        // If there is no collision avoidance worthy actor in the current lane or 
+        // the closest one to the top is sufficiently far, spawn a cab in the lane
         if (closestToTop == nullptr || closestToTop->getY() < VIEW_HEIGHT * 2 / 3)
         {
-            addActor(new ZombieCab(ROAD_CENTER + ROAD_WIDTH / 3.0 * curLane, VIEW_HEIGHT - SPRITE_HEIGHT / 2.0, m_player->getVertSpeed() - randInt(2, 4), this));
+            addActor(new ZombieCab(ROAD_CENTER + ROAD_WIDTH / 3.0 * curLane, VIEW_HEIGHT - SPRITE_HEIGHT / 2.0, m_player->getVertSpeed() - randInt(2, 4), curLane, this));
             break;
         }
     }
 }
-// The direction specifies whether to check in front or behind the cab,
-// 1 is in front, -1 is behind
+// Checks whether a zombie cab is too close to an actor ahead of it or an actor behind it
+// Parameters:
+//  - Pointer to the zombie cab itself
+//  - Integer representing the direction to check in (1 for front, -1 for behind)
 bool StudentWorld::actorInRangeOfCab(ZombieCab* cab, int dir)
 {
     vector<Actor*>::iterator it = allActors.begin();
@@ -238,25 +247,29 @@ bool StudentWorld::actorInRangeOfCab(ZombieCab* cab, int dir)
             && (*it)->getX() >= leftBoundary
             && (*it)->getX() < rightBoundary)
         {
-            // Furthermore, if the object is in front of the cab return true
-            // Otherwise return true only if the actor is not the player
-            if (dir == 1 || (*it) != m_player)
+            // Furthermore, if the actor is not both the player and behind
+            // the cab, return true; otherwise, ignore it
+            if (!(dir == -1 && (*it) == m_player))
                 return true;
         }
         it++;
     }
     return false;
 }
-
+// Checks whether a holy water projectile has collided with anything interesting
+// Parameters:
+//  - Pointer to the holy water projectile itself
 bool StudentWorld::checkProjectileCollision(Actor* proj)
 {
+    // Iterate through all of the actors
     vector<Actor*>::iterator it = allActors.begin();
     while (it != allActors.end())
     {
-        // Check that the object is affected by projectiles
-        // and the objects overlap 
+        // Check that the actor is affected by projectiles
+        // and the actors overlap 
         if ((*it)->isAffectedByProjectile() && proj->doesOverlap(*it))
         {
+            // Make the actor interact with the projectile and report a successful collision
             (*it)->interactWithProjectile();
             return true;
         }
@@ -264,12 +277,14 @@ bool StudentWorld::checkProjectileCollision(Actor* proj)
     }
     return false;
 }
-
+// Destroy all actors and free their memory
 void StudentWorld::cleanUp()
 {
+    // Iterate through all of the actors
     vector<Actor*>::iterator it = allActors.begin();
     while (it != allActors.end())
     {
+        // Delete both the actor and its pointer from the vector
         delete* it;
         allActors.erase(it);
         it = allActors.begin();

@@ -74,7 +74,7 @@ private:
 class ZombieCab : public Sentient
 {
 public:
-	ZombieCab(double x, double y, double speed, StudentWorld* world);
+	ZombieCab(double x, double y, double speed, int lane, StudentWorld* world);
 	virtual bool isAffectedByProjectile() const { return true; };
 	virtual void interactWithProjectile();
 	virtual void doSomething();
