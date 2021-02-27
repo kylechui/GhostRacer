@@ -63,11 +63,11 @@ class Player : public Sentient
 public:
 	Player(StudentWorld* world);
 	virtual void doSomething();
-	void shootHolyWater();
 	void refillSprays(int n) { m_spraysLeft += n; };
 	int getSprays() const { return m_spraysLeft; };
 	void spin();
 private:
+	void shootHolyWater();
 	int m_spraysLeft;
 };
 //
@@ -80,7 +80,6 @@ public:
 	virtual bool isAffectedByProjectile() const { return true; };
 	virtual void interactWithProjectile();
 	virtual void doSomething();
-	void setLane(int lane) { m_lane = lane; };
 	int getLane() const { return m_lane; };
 private:
 	bool m_damagedPlayer;
@@ -159,6 +158,7 @@ class OilSlick : public ActivatedObject
 {
 public:
 	OilSlick(double x, double y, StudentWorld* world);
+protected:
 	virtual bool selfDestructsValue() const { return false; };
 	virtual int getSoundValue() const { return SOUND_OIL_SLICK; };
 	virtual bool spinPlayerValue() const { return true; };
@@ -171,6 +171,7 @@ class HealingGoodie : public ActivatedObject
 {
 public:
 	HealingGoodie(double x, double y, StudentWorld* world);
+protected:
 	virtual int getHealthValue() const { return 10; };
 	virtual int getScoreValue() const { return 250; };
 	virtual bool isAffectedByProjectile() const { return true; };
@@ -183,6 +184,7 @@ class HolyWaterGoodie : public ActivatedObject
 {
 public:
 	HolyWaterGoodie(double x, double y, StudentWorld* world);
+protected:
 	virtual int getSpraysValue() const { return 10; };
 	virtual int getScoreValue() const { return 50; };
 	virtual bool isAffectedByProjectile() const { return true; };
@@ -195,6 +197,7 @@ class SoulGoodie : public ActivatedObject
 {
 public:
 	SoulGoodie(double x, double y, StudentWorld* world);
+protected:
 	virtual int getSoundValue() const { return SOUND_GOT_SOUL; };
 	virtual int getScoreValue() const { return 100; };
 	virtual bool doesRotateValue() const { return true; };

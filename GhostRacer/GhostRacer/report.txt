@@ -6,3 +6,54 @@ Winter 2021 CS 32
 Project 3 Report
 
 1. Descriptions of the public member functions in my classes: 
+================================================================================
+Actor Class:
+-- doSomething
+  >> This makes the Actor do something.
+  >> This function is pure virtual because it is never called, and I want to
+     force the derived classes to redefine it.
+  >> All Actors do something so it made sense to define it here.
+-- isAlive
+  >> This function returns a boolean telling whether the Actor is alive or not.
+  >> This function is non-virtual because the implementation is the same for all
+     Actors.
+  >> All Actors are either alive or not so it made sense to define it in the
+     Actor class.
+-- getVertSpeed and getHorizSpeed
+  >> These functions return the vertical and horizontal speed of the Actor.
+  >> These functions are non-virtual because the implementation is the same for
+     all Actors.
+  >> All Actors have horizontal and vertical speed (potentially zero), so it
+     made sense to put these functions here.
+-- doesOverlap
+  >> This function checks if Actors overlap, which is the same for all Actors,
+     so the function is not virtual.
+  >> All Actors can overlap with other Actors, so it makes sense to put this
+     function here.
+-- isCollisionAvoidanceWorthy
+  >> This function returns a boolean telling whether or not the Actor is
+     collision avoidance worthy or not.
+  >> This function is virtual because I expect it to be overwritten by some
+     derived classes. By default all Actors are not collision avoidance worthy,
+     but classes can override this function to make them collision
+     avoidance worthy.
+  >> It is necessary to get information about if all Actors are collision
+     avoidance worthy, so it makes sense to put this here.
+-- isAffectedByProjecile and interactWithProjectile
+  >> These functions tell how the Actor interacts with a projectile, if it does
+  >> so at all. By default all Actors do not interact with projectiles, but
+  classes will override this to interact with projectiles.
+  >> These functions are virtual because it will be overwritten by some derived
+  classes. They are not pure virtual because I have some classes derived from
+  the Actor class that do not implement these functions.
+  >> It is necessary to get information about if/how all Actors interact with
+     projectiles, so it makes sense to put this here.
+================================================================================
+Sentient Class:
+-- getHealth and changeHealth
+  >> These functions return and change the object's health, respectively.
+  >> All members of this class have health statuses and thus need getter/setter
+     functions for this. These are non-virtual because all derived classes use
+     the same implementation.
+================================================================================
+Player Class:
