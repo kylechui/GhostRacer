@@ -62,11 +62,11 @@ class Player : public Sentient
 {
 public:
 	Player(StudentWorld* world);
-	virtual void doSomething();
 	void refillSprays(int n) { m_spraysLeft += n; };
 	int getSprays() const { return m_spraysLeft; };
 	void spin();
 private:
+	virtual void doSomething();
 	void shootHolyWater();
 	int m_spraysLeft;
 };
@@ -77,11 +77,11 @@ class ZombieCab : public Sentient
 {
 public:
 	ZombieCab(double x, double y, double speed, int lane, StudentWorld* world);
+	int getLane() const { return m_lane; };
+private:
 	virtual bool isAffectedByProjectile() const { return true; };
 	virtual void interactWithProjectile();
 	virtual void doSomething();
-	int getLane() const { return m_lane; };
-private:
 	bool m_damagedPlayer;
 	int m_lane;
 	int m_movementPlanDistance;
@@ -96,12 +96,12 @@ class Pedestrian : public Sentient
 {
 public:
 	Pedestrian(int imageID, double x, double y, int size, StudentWorld* world);
-	virtual bool isAffectedByProjectile() const { return true; };
 protected:
 	int getMovementPlanDistance() const { return m_movementPlanDistance; };
 	void setMovementPlanDistance(int d) { m_movementPlanDistance = d; };
 	void updateMovementPlan();
 private:
+	virtual bool isAffectedByProjectile() const { return true; };
 	int m_movementPlanDistance;
 };
 //
@@ -111,9 +111,9 @@ class HumanPedestrian : public Pedestrian
 {
 public:
 	HumanPedestrian(double x, double y, StudentWorld* world);
+private:
 	virtual void doSomething();
 	virtual void interactWithProjectile();
-private:
 };
 //
 // Zombie Pedestrian Class
@@ -122,9 +122,9 @@ class ZombiePedestrian : public Pedestrian
 {
 public:
 	ZombiePedestrian(double x, double y, StudentWorld* world);
+private:
 	virtual void doSomething();
 	virtual void interactWithProjectile();
-private:
 	int m_tickToGrunt;
 };
 //
@@ -137,8 +137,6 @@ class ActivatedObject : public Actor
 {
 public:
 	ActivatedObject(int imageID, double x, double y, int size, StudentWorld* world);
-	virtual void doSomething();
-	virtual void interactWithProjectile() { setDead(); };
 protected:
 	// Initialise default behaviours for the activated objects (can/will be overridden by derived classes)
 	virtual bool doesRotateValue() const { return false; };
@@ -148,8 +146,10 @@ protected:
 	virtual int getSpraysValue() const { return 0; };
 	virtual int getScoreValue() const { return 0; };
 	virtual int getSoundValue() const { return SOUND_GOT_GOODIE; };
+	virtual void interactWithProjectile() { setDead(); };
 	void interactWithPlayer();
 private:
+	virtual void doSomething();
 };
 //
 // Oil Slick Class
@@ -210,8 +210,8 @@ class Projectile : public Actor
 {
 public:
 	Projectile(double x, double y, int dir, StudentWorld* world);
-	virtual void doSomething();
 private:
+	virtual void doSomething();
 	double m_distTraveled;
 };
 //
@@ -221,7 +221,7 @@ class BorderLine : public Actor
 {
 public:
 	BorderLine(double x, double y, int imageID, StudentWorld* world);
-	virtual void doSomething();
 private:
+	virtual void doSomething();
 };
 #endif // ACTOR_H_

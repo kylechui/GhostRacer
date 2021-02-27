@@ -57,3 +57,33 @@ Sentient Class:
      the same implementation.
 ================================================================================
 Player Class:
+-- doSomething
+  >> Makes the Player do its thing.
+  >> Declared as virtual to remind me that it's overriding a function of the
+     same name from Actor.
+-- getSprays and refillSprays
+  >> These functions return and increase the player's spray count, respectively.
+  >> These are non-virtual as Player has no derived classes.
+-- spin
+  >> This function spins the player when it goes over an oil slick.
+  >> This is non-virtual as Player has no derived classes.
+================================================================================
+ZombieCab Class:
+-- isAffectedByProjectile and interactWithProjectile
+  >> Returns true and illustrates how the Zombie Cab interacts with a
+     projectile, respectively.
+  >> Declared as virtual to remind me that it's overriding a function of the
+     same name from Actor.
+-- doSomething
+  >> Makes the Zombie Cab do its thing.
+  >> Declared as virtual to remind me that it's overriding a function of the
+     same name from Actor.
+-- getLane
+  >> Returns an integer indicating the lane the Zombie Cab is in.
+  >> Non-virtual because Zombie Cab has no derived classes.
+================================================================================
+Pedestrian Class:
+-- isAffectedByProjectile
+  >> Returns true because pedestrians are affected by projeciles.
+  >> Declared as virtual to remind me that it's overriding a function of the
+     same name from Actor.
